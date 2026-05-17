@@ -1,19 +1,49 @@
 {
   "name": "vortex-workspace",
-  "version": "1.0.0",
-  "description": "Vortex — A high-energy workspace dashboard with AI-powered insights",
+  "version": "3.0.0",
+  "description": "Vortex — Enterprise SaaS workspace dashboard with AI-powered insights",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
+    "css:build": "npx tailwindcss -i src/styles/input.css -o public/css/style.css --minify",
+    "css:watch": "npx tailwindcss -i src/styles/input.css -o public/css/style.css --watch",
+    "build": "npm run css:build && npx prisma generate",
+    "db:push": "npx prisma db push",
+    "db:studio": "npx prisma studio",
+    "prisma:generate": "npx prisma generate",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": ["dashboard", "workspace", "ai", "productivity"],
+  "keywords": [
+    "dashboard",
+    "workspace",
+    "ai",
+    "productivity"
+  ],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@prisma/client": "^5.22.0",
+    "bcryptjs": "^3.0.3",
+    "compression": "^1.8.1",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
-    "express": "^5.1.0"
+    "dotenv": "^17.4.2",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.5.2",
+    "helmet": "^8.1.0",
+    "ioredis": "^5.10.1",
+    "jsonwebtoken": "^9.0.3",
+    "morgan": "^1.10.1",
+    "socket.io": "^4.8.3",
+    "uuid": "^14.0.0",
+    "winston": "^3.19.0"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.5.0",
+    "postcss": "^8.5.14",
+    "prisma": "^5.22.0",
+    "tailwindcss": "^3.4.19"
   }
 }

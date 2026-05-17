@@ -1,52 +1,62 @@
-# ⚡ Vortex Workspace
+# Vortex Workspace ⚡ v3.0 (Enterprise Edition)
 
-A high-energy, AI-powered workspace dashboard built with a professional full-stack architecture.
+![Database: Neon PostgreSQL](https://img.shields.io/badge/Database-Neon_PostgreSQL-00E599?style=flat-square&logo=postgresql&logoColor=black)
+![Cache: Upstash Redis](https://img.shields.io/badge/Cache-Upstash_Redis-FF4D4D?style=flat-square&logo=redis&logoColor=white)
+![AI: Google Gemini](https://img.shields.io/badge/AI-Google_Gemini-4285F4?style=flat-square&logo=google&logoColor=white)
 
-## 🏗️ Architecture
+Vortex Workspace is a modern, high-performance, real-time SaaS dashboard built for the GSSoC Hackathon. It features an "Arctic-Vivid" Glassmorphism UI, real-time optimistic updates, and intelligent AI insights powered by Google Gemini.
 
-```
-vortex/
-├── server.js                    # Express entry point
-├── public/                      # Frontend (HTML + Tailwind CSS)
-│   ├── index.html
-│   └── js/
-│       ├── dashboard.js         # Dashboard UI logic
-│       └── aiAssistant.js       # Gemini AI utility
-└── src/                         # Backend (Controller-Service-Repository)
-    ├── controllers/
-    ├── services/
-    ├── repositories/
-    └── routes/
-```
+---
 
-## 🚀 Quick Start
+### 🎥 Demo
+<!-- Add your 10-second GIF here showing Optimistic UI and AI slide-over -->
+*(Demo GIF goes here)*
 
-```bash
-npm install
-npm run dev
-```
+---
 
-Open `http://localhost:3000` in your browser.
+### 🏛️ The Architecture
+Vortex has graduated from prototype to a fully production-ready system:
+- **Scalable Backend:** Node.js, Express, Prisma ORM, PostgreSQL (via Neon) and Redis caching (via Upstash).
+- **Secure Infrastructure:** JWT Authentication, HTTP-only cookies, Row Level Security (RLS), Helmet, and rate limiting.
+- **Premium Frontend:** HTML5/CSS3 with Tailwind CSS, strictly implementing the Arctic-Vivid design philosophy.
+- **Real-Time Sync:** Socket.io connected for instantaneous multi-client updates.
+- **Smart Layer:** Markdown-rendered AI slide-over panels utilizing the Gemini 2.0 API.
 
-## 📡 API Endpoints
+### 🚩 Call To Contributors (The "Issue #6" Call-to-Action)
+The Core Engine is built, but we need your help to polish the smart features!
+- **Search Logic:** Implement `Fuse.js` for fuzzy search across tasks and workspaces in `dashboard.js`.
+- **Detailed AI Suggestions:** Enhance the AI context window to generate actionable sub-tasks based on the sentiment analysis.
+- **Mobile Responsiveness:** Ensure the Glassmorphism sidebar collapses perfectly on smaller screens.
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/v1/tasks` | List all tasks (supports `?status=`, `?priority=` filters) |
-| GET | `/api/v1/tasks/stats` | Dashboard statistics |
-| POST | `/api/v1/tasks` | Create a new task |
-| GET | `/api/v1/workspace` | List all workspaces |
-| POST | `/api/v1/workspace` | Create a workspace |
-| GET | `/api/health` | Health check |
+### 🛠️ Local Development Setup
 
-## 🤝 Contributing — Intentional Gaps
+1. **Clone and Install:**
+   ```bash
+   git clone https://github.com/your-username/VortexAI.git
+   cd VortexAI
+   npm install
+   ```
 
-These features are intentionally left incomplete for contributors:
+2. **Environment Variables:**
+   Create a `.env` file and populate it using `.env.example`:
+   - `DATABASE_URL` (PostgreSQL connection string)
+   - `REDIS_URL` (Upstash Redis)
+   - `GEMINI_API_KEY`
+   - `JWT_SECRET`
 
-1. **Live Search** — The search bar UI exists but has no JS filtering logic
-2. **Database Layer** — API returns static JSON; connect MongoDB/PostgreSQL
-3. **API Key Security** — `aiAssistant.js` has a plain API key; implement `dotenv`
+3. **Database Migration:**
+   ```bash
+   npx prisma generate
+   npx prisma migrate dev --name init
+   node prisma/seed.js
+   ```
 
-## 📄 License
+4. **Launch Server:**
+   ```bash
+   npm run dev
+   ```
+   Navigate to `http://localhost:3000` to enter the Vortex.
 
-MIT
+---
+
+**Built with ❤️ for GSSoC.**

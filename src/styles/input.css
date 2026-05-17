@@ -1,0 +1,185 @@
+/* ─────────────────────────────────────────────────────────────
+   Vortex Workspace — Source Stylesheet
+   Build: npx tailwindcss -i src/styles/input.css -o public/css/style.css --minify
+   ───────────────────────────────────────────────────────────── */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Base Layer ─────────────────────────────────────────────── */
+@layer base {
+  * {
+    font-family: 'Inter', sans-serif;
+  }
+
+  body {
+    background: #F9FAFB;
+  }
+
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar {
+    width: 5px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #CBD5E1;
+    border-radius: 3px;
+  }
+}
+
+/* ── Component Layer ────────────────────────────────────────── */
+@layer components {
+
+  /* Glassmorphism Sidebar */
+  .glass-sidebar {
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-right: 1px solid rgba(226, 232, 240, 0.6);
+  }
+
+  /* Sidebar Navigation Links */
+  .nav-link {
+    @apply transition-all duration-200 rounded-xl;
+  }
+  .nav-link:hover {
+    background: rgba(37, 99, 235, 0.06);
+    color: #2563EB;
+  }
+  .nav-link.active {
+    background: rgba(37, 99, 235, 0.08);
+    color: #2563EB;
+    font-weight: 600;
+  }
+  .nav-link.active .nav-icon {
+    color: #2563EB;
+  }
+
+  /* Vortex Card */
+  .v-card {
+    @apply transition-all duration-200;
+  }
+  .v-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.07);
+  }
+
+  /* Status Badges */
+  .badge {
+    @apply text-[0.65rem] py-[3px] px-2.5 rounded-full font-bold uppercase tracking-wider;
+  }
+  .badge-active {
+    @apply bg-emerald-100 text-emerald-800;
+    background: #D1FAE5;
+    color: #065F46;
+  }
+  .badge-pending {
+    background: #FEF3C7;
+    color: #92400E;
+  }
+  .badge-high {
+    background: #FEE2E2;
+    color: #991B1B;
+  }
+  .badge-medium {
+    background: #DBEAFE;
+    color: #1E40AF;
+  }
+  .badge-low {
+    background: #F1F5F9;
+    color: #475569;
+  }
+  .badge-on-track {
+    background: #D1FAE5;
+    color: #065F46;
+  }
+  .badge-at-risk {
+    background: #FEF3C7;
+    color: #92400E;
+  }
+  .badge-blocked {
+    background: #FEE2E2;
+    color: #991B1B;
+  }
+
+  /* Table Row */
+  .t-row {
+    @apply transition-colors duration-150;
+  }
+  .t-row:hover {
+    background: #F9FAFB;
+  }
+
+  /* Risk Level Colors */
+  .risk-low {
+    color: #059669;
+  }
+  .risk-medium {
+    color: #D97706;
+  }
+  .risk-high {
+    color: #DC2626;
+  }
+}
+
+/* ── Utility Layer ──────────────────────────────────────────── */
+@layer utilities {
+
+  /* Health Widget — Glow Pulse */
+  .health-glow {
+    animation: healthGlow 2.5s ease-in-out infinite;
+  }
+  .health-ring {
+    animation: healthRing 2.5s ease-in-out infinite;
+  }
+
+  /* Notification Pulse */
+  .pulse-dot {
+    animation: pulseDot 2s infinite;
+  }
+
+  /* Fade In */
+  .fade-in {
+    animation: fadeIn 0.45s ease-out;
+  }
+}
+
+/* ── Keyframes ──────────────────────────────────────────────── */
+@keyframes healthGlow {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.3), 0 0 24px rgba(16, 185, 129, 0.15);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(16, 185, 129, 0.5), 0 0 48px rgba(16, 185, 129, 0.25);
+  }
+}
+
+@keyframes healthRing {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.2;
+    transform: scale(1.15);
+  }
+}
+
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

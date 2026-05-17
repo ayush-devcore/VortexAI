@@ -1,77 +1,42 @@
-// ─────────────────────────────────────────────────────────────
-// Workspace Service — Business Logic Layer
-// ─────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────
+// Workspace Service — Business Logic (Async/Prisma-ready)
+// ─────────────────────────────────────────────────────────
 
 const workspaceRepository = require('../repositories/workspaceRepository');
 const notificationService = require('./notificationService');
 
-/**
- * Get all workspaces
- */
-const getAllWorkspaces = () => {
-  return workspaceRepository.findAll();
+const getAllWorkspaces = async (userId = null) => {
+  return workspaceRepository.findAll(userId);
 };
 
-/**
- * Get a single workspace by ID
- */
-const getWorkspaceById = (id) => {
-  const workspace = workspaceRepository.findById(id);
-  if (!workspace) {
-    throw new Error(`Workspace with ID "${id}" not found`);
-  }
-  return workspace;
+const getWorkspaceById = async (id) => {
+  const ws = await workspaceRepository.findById(id);
+  if (!ws) throw Object.assign(new Error(`Workspace "${id}" not found`), { status: 404 });
+  return ws;
 };
 
-/**
- * Create a new workspace
- */
-const createWorkspace = (data) => {
-  // Validate required fields
-  if (!data.name || data.name.trim().length === 0) {
-    throw new Error('Workspace name is required');
-  }
-
-  const workspace = workspaceRepository.create({
+const createWorkspace = async (data, userId) => {
+  if (!data.name?.trim()) throw Object.assign(new Error('Workspace name is required'), { status: 400 });
+  const ws = await workspaceRepository.create({
     name: data.name.trim(),
     description: data.description || '',
-    owner: data.owner || 'System',
-    members: data.members || 1,
-    status: data.status || 'active'
+    ownerId: userId || 'dev-user-001',
+    status: 'ACTIVE',
   });
-
-  // Fire notification
-  notificationService.notifyWorkspaceCreated(workspace);
-
-  return workspace;
+  notificationService.notifyWorkspaceCreated(ws);
+  return ws;
 };
 
-/**
- * Update an existing workspace
- */
-const updateWorkspace = (id, data) => {
-  const workspace = workspaceRepository.update(id, data);
-  if (!workspace) {
-    throw new Error(`Workspace with ID "${id}" not found`);
-  }
-  return workspace;
+const updateWorkspace = async (id, data) => {
+  const ws = await workspaceRepository.update(id, data);
+  if (!ws) throw Object.assign(new Error(`Workspace "${id}" not found`), { status: 404 });
+  return ws;
 };
 
-/**
- * Delete a workspace
- */
-const deleteWorkspace = (id) => {
-  const deleted = workspaceRepository.remove(id);
-  if (!deleted) {
-    throw new Error(`Workspace with ID "${id}" not found`);
-  }
-  return { message: `Workspace "${id}" deleted successfully` };
+const deleteWorkspace = async (id) => {
+  const deleted = await workspaceRepository.remove(id);
+  if (!deleted) throw Object.assign(new Error(`Workspace "${id}" not found`), { status: 404 });
+  return { message: `Workspace "${id}" deleted` };
 };
 
-module.exports = {
-  getAllWorkspaces,
-  getWorkspaceById,
-  createWorkspace,
-  updateWorkspace,
-  deleteWorkspace
-};
+module.exports = { getAllWorkspaces, getWorkspaceById, createWorkspace, updateWorkspace, deleteWorkspace };

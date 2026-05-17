@@ -1,95 +1,50 @@
-// ─────────────────────────────────────────────────────────────
-// Workspace Repository — Data Access Layer
-// ─────────────────────────────────────────────────────────────
-// TODO: Connect to MongoDB/PostgreSQL using Mongoose/Prisma
-// Currently uses in-memory storage for development/demo purposes.
-// Contributors: Replace the in-memory array with a proper DB connection.
-// ─────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────
+// Workspace Repository — Prisma ORM
+// ─────────────────────────────────────────────────────────
 
-let workspaces = [
-  {
-    id: 'ws-001',
-    name: 'Product Launch Q3',
-    description: 'Cross-functional workspace for the Q3 product release cycle',
-    owner: 'Sarah Chen',
-    members: 12,
-    status: 'active',
-    createdAt: '2026-04-15T09:00:00Z',
-    updatedAt: '2026-05-16T14:30:00Z'
-  },
-  {
-    id: 'ws-002',
-    name: 'Engineering Sprint 47',
-    description: 'Backend infrastructure improvements and API v2 migration',
-    owner: 'Marcus Johnson',
-    members: 8,
-    status: 'active',
-    createdAt: '2026-05-01T10:00:00Z',
-    updatedAt: '2026-05-17T08:15:00Z'
-  },
-  {
-    id: 'ws-003',
-    name: 'Design System Overhaul',
-    description: 'Unified component library and design token standardization',
-    owner: 'Priya Sharma',
-    members: 5,
-    status: 'pending',
-    createdAt: '2026-05-10T11:00:00Z',
-    updatedAt: '2026-05-15T16:45:00Z'
-  }
-];
+const { prisma, isDBAvailable } = require('../config/database');
+const { cacheGet, cacheSet, cacheDel } = require('../config/redis');
 
-// TODO: Replace with actual DB queries (e.g., Workspace.find(), prisma.workspace.findMany())
+function usePrisma() {
+  return isDBAvailable();
+}
 
-/**
- * Retrieve all workspaces
- */
-const findAll = () => {
-  return [...workspaces];
+const findAll = async (userId = null) => {
+  if (!usePrisma()) throw new Error('Database unavailable');
+  const where = userId ? { members: { some: { userId } } } : {};
+  const cached = await cacheGet(`workspaces:${userId || 'all'}`);
+  if (cached) return cached;
+  const ws = await prisma.workspace.findMany({ where, include: { owner: { select: { name: true } }, _count: { select: { members: true, tasks: true } } }, orderBy: { createdAt: 'desc' } });
+  await cacheSet(`workspaces:${userId || 'all'}`, ws, 120);
+  return ws;
 };
 
-/**
- * Find a workspace by ID
- */
-const findById = (id) => {
-  return workspaces.find(ws => ws.id === id) || null;
+const findById = async (id) => {
+  if (!usePrisma()) throw new Error('Database unavailable');
+  return prisma.workspace.findUnique({ where: { id }, include: { owner: { select: { name: true } }, members: { include: { user: { select: { id: true, name: true, email: true } } } }, _count: { select: { tasks: true } } } });
 };
 
-/**
- * Create a new workspace record
- */
-const create = (workspaceData) => {
-  const newWorkspace = {
-    id: `ws-${String(workspaces.length + 1).padStart(3, '0')}`,
-    ...workspaceData,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  };
-  workspaces.push(newWorkspace);
-  return newWorkspace;
+const create = async (data) => {
+  if (!usePrisma()) throw new Error('Database unavailable');
+  const ws = await prisma.workspace.create({
+    data: { ...data, members: { create: { userId: data.ownerId, role: 'ADMIN' } } },
+    include: { _count: { select: { members: true, tasks: true } } }
+  });
+  await cacheDel(`workspaces:${data.ownerId}`);
+  return ws;
 };
 
-/**
- * Update a workspace by ID
- */
-const update = (id, updateData) => {
-  const index = workspaces.findIndex(ws => ws.id === id);
-  if (index === -1) return null;
-  workspaces[index] = {
-    ...workspaces[index],
-    ...updateData,
-    updatedAt: new Date().toISOString()
-  };
-  return workspaces[index];
+const update = async (id, data) => {
+  if (!usePrisma()) throw new Error('Database unavailable');
+  const ws = await prisma.workspace.update({ where: { id }, data });
+  await cacheDel('workspaces:all');
+  return ws;
 };
 
-/**
- * Delete a workspace by ID
- */
-const remove = (id) => {
-  const index = workspaces.findIndex(ws => ws.id === id);
-  if (index === -1) return false;
-  workspaces.splice(index, 1);
+const remove = async (id) => {
+  if (!usePrisma()) throw new Error('Database unavailable');
+  await prisma.workspace.delete({ where: { id } });
+  await cacheDel('workspaces:all');
   return true;
 };
 

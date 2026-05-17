@@ -1,107 +1,80 @@
-// ─────────────────────────────────────────────────────────────
-// Task Service — Business Logic Layer
-// ─────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────
+// Task Service — Business Logic (Async/Prisma-ready)
+// ─────────────────────────────────────────────────────────
 
 const taskRepository = require('../repositories/taskRepository');
 const notificationService = require('./notificationService');
 
-/**
- * Get all tasks with optional filters
- */
-const getAllTasks = (filters = {}) => {
-  return taskRepository.findAll(filters);
+const getAllTasks = async (filters = {}, userId = null) => {
+  return taskRepository.findAll(filters, userId);
 };
 
-/**
- * Get a single task by ID
- */
-const getTaskById = (id) => {
-  const task = taskRepository.findById(id);
-  if (!task) {
-    throw new Error(`Task with ID "${id}" not found`);
-  }
+const getTaskById = async (id) => {
+  const task = await taskRepository.findById(id);
+  if (!task) throw Object.assign(new Error(`Task "${id}" not found`), { status: 404 });
   return task;
 };
 
-/**
- * Create a new task
- */
-const createTask = (data) => {
-  // Validate required fields
-  if (!data.title || data.title.trim().length === 0) {
-    throw new Error('Task title is required');
+const createTask = async (data, userId) => {
+  if (!data.title?.trim()) throw Object.assign(new Error('Task title is required'), { status: 400 });
+  
+  // Dynamic fallback for workspace and creator since we removed hardcoded IDs
+  let targetWorkspaceId = data.workspaceId;
+  if (!targetWorkspaceId) {
+    const ws = await taskRepository.findAll({}, userId);
+    targetWorkspaceId = ws.length > 0 ? ws[0].workspaceId : null;
+    if (!targetWorkspaceId) {
+       const firstWs = await require('../config/database').prisma.workspace.findFirst();
+       targetWorkspaceId = firstWs?.id;
+    }
   }
 
-  const task = taskRepository.create({
-    title: data.title.trim(),
-    description: data.description || '',
-    assignee: data.assignee || 'Unassigned',
-    workspace: data.workspace || null,
-    priority: data.priority || 'medium',
-    status: data.status || 'pending',
-    tags: data.tags || [],
-    dueDate: data.dueDate || null
+  let targetCreatorId = userId;
+  if (!targetCreatorId) {
+     const firstUser = await require('../config/database').prisma.user.findFirst();
+     targetCreatorId = firstUser?.id;
+  }
+
+  const { assigneeName, ...cleanData } = data; // Remove virtual mock fields
+  
+  const task = await taskRepository.create({
+    title: cleanData.title.trim(),
+    description: cleanData.description || '',
+    workspaceId: targetWorkspaceId,
+    assigneeId: cleanData.assigneeId || null,
+    creatorId: targetCreatorId,
+    priority: (cleanData.priority || 'MEDIUM').toUpperCase(),
+    status: (cleanData.status || 'PENDING').toUpperCase(),
+    tags: cleanData.tags || [],
+    dueDate: cleanData.dueDate ? new Date(cleanData.dueDate) : null,
   });
-
-  // Fire notification
   notificationService.notifyTaskCreated(task);
-
   return task;
 };
 
-/**
- * Update an existing task
- */
-const updateTask = (id, data) => {
-  const task = taskRepository.update(id, data);
-  if (!task) {
-    throw new Error(`Task with ID "${id}" not found`);
-  }
-
+const updateTask = async (id, data) => {
+  const task = await taskRepository.update(id, data);
+  if (!task) throw Object.assign(new Error(`Task "${id}" not found`), { status: 404 });
   notificationService.notifyTaskUpdated(task);
   return task;
 };
 
-/**
- * Delete a task
- */
-const deleteTask = (id) => {
-  const deleted = taskRepository.remove(id);
-  if (!deleted) {
-    throw new Error(`Task with ID "${id}" not found`);
-  }
-  return { message: `Task "${id}" deleted successfully` };
+const deleteTask = async (id) => {
+  const deleted = await taskRepository.remove(id);
+  if (!deleted) throw Object.assign(new Error(`Task "${id}" not found`), { status: 404 });
+  return { message: `Task "${id}" deleted` };
 };
 
-/**
- * Get dashboard statistics
- */
-const getDashboardStats = () => {
-  const allTasks = taskRepository.findAll();
-  const activeTasks = allTasks.filter(t => t.status === 'active');
-  const pendingTasks = allTasks.filter(t => t.status === 'pending');
-
-  // Calculate velocity (simulated — tasks completed per sprint)
-  const velocity = Math.round((activeTasks.length / allTasks.length) * 100);
-
+const getDashboardStats = async (userId = null) => {
+  const all = await taskRepository.findAll({}, userId);
+  const active = all.filter(t => t.status === 'ACTIVE');
+  const pending = all.filter(t => t.status === 'PENDING');
+  const velocity = all.length ? Math.round((active.length / all.length) * 100) : 0;
   return {
-    activeTasks: activeTasks.length,
-    pendingTasks: pendingTasks.length,
-    totalTasks: allTasks.length,
+    activeTasks: active.length, pendingTasks: pending.length, totalTasks: all.length,
     teamVelocity: velocity,
-    aiInsights: {
-      score: 87,
-      trend: 'up',
-      suggestion: 'Team productivity increased 12% this sprint. Consider reallocating resources from pending DevOps tasks.'
-    }
+    aiInsights: { score: 87, trend: 'up', suggestion: 'Team productivity increased 12% this sprint.' },
   };
 };
 
-module.exports = {
-  getAllTasks,
-  getTaskById,
-  createTask,
-  updateTask,
-  deleteTask,
-  getDashboardStats
-};
+module.exports = { getAllTasks, getTaskById, createTask, updateTask, deleteTask, getDashboardStats };

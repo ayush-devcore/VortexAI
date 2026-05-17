@@ -1,105 +1,42 @@
-// ─────────────────────────────────────────────────────────────
-// Workspace Controller — HTTP Request Handlers
-// ─────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────
+// Workspace Controller — Async, Auth-Aware
+// ─────────────────────────────────────────────────────────
 
 const workspaceService = require('../services/workspaceService');
 
-/**
- * GET /api/v1/workspace
- * Retrieve all workspaces
- */
-const getAll = (req, res) => {
+const getAll = async (req, res, next) => {
   try {
-    const workspaces = workspaceService.getAllWorkspaces();
-    res.json({
-      success: true,
-      count: workspaces.length,
-      data: workspaces
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: error.message
-    });
-  }
+    const workspaces = await workspaceService.getAllWorkspaces(req.user?.id);
+    res.json({ success: true, count: workspaces.length, data: workspaces });
+  } catch (e) { next(e); }
 };
 
-/**
- * GET /api/v1/workspace/:id
- * Retrieve a single workspace
- */
-const getById = (req, res) => {
+const getById = async (req, res, next) => {
   try {
-    const workspace = workspaceService.getWorkspaceById(req.params.id);
-    res.json({
-      success: true,
-      data: workspace
-    });
-  } catch (error) {
-    res.status(404).json({
-      success: false,
-      error: error.message
-    });
-  }
+    const ws = await workspaceService.getWorkspaceById(req.params.id);
+    res.json({ success: true, data: ws });
+  } catch (e) { next(e); }
 };
 
-/**
- * POST /api/v1/workspace
- * Create a new workspace
- */
-const create = (req, res) => {
+const create = async (req, res, next) => {
   try {
-    const workspace = workspaceService.createWorkspace(req.body);
-    res.status(201).json({
-      success: true,
-      message: 'Workspace created successfully',
-      data: workspace
-    });
-  } catch (error) {
-    res.status(400).json({
-      success: false,
-      error: error.message
-    });
-  }
+    const ws = await workspaceService.createWorkspace(req.body, req.user?.id);
+    res.status(201).json({ success: true, message: 'Workspace created', data: ws });
+  } catch (e) { next(e); }
 };
 
-/**
- * PUT /api/v1/workspace/:id
- * Update a workspace
- */
-const update = (req, res) => {
+const update = async (req, res, next) => {
   try {
-    const workspace = workspaceService.updateWorkspace(req.params.id, req.body);
-    res.json({
-      success: true,
-      message: 'Workspace updated successfully',
-      data: workspace
-    });
-  } catch (error) {
-    res.status(404).json({
-      success: false,
-      error: error.message
-    });
-  }
+    const ws = await workspaceService.updateWorkspace(req.params.id, req.body);
+    res.json({ success: true, message: 'Workspace updated', data: ws });
+  } catch (e) { next(e); }
 };
 
-/**
- * DELETE /api/v1/workspace/:id
- * Delete a workspace
- */
-const remove = (req, res) => {
+const remove = async (req, res, next) => {
   try {
-    const result = workspaceService.deleteWorkspace(req.params.id);
-    res.json({
-      success: true,
-      ...result
-    });
-  } catch (error) {
-    res.status(404).json({
-      success: false,
-      error: error.message
-    });
-  }
+    const result = await workspaceService.deleteWorkspace(req.params.id);
+    res.json({ success: true, ...result });
+  } catch (e) { next(e); }
 };
 
 module.exports = { getAll, getById, create, update, remove };

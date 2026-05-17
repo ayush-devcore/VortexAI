@@ -1,136 +1,53 @@
-// ─────────────────────────────────────────────────────────────
-// Task Controller — HTTP Request Handlers
-// ─────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────
+// Task Controller — Async, Auth-Aware
+// ─────────────────────────────────────────────────────────
 
 const taskService = require('../services/taskService');
 
-/**
- * GET /api/v1/tasks
- * Retrieve all tasks (supports query filters)
- */
-const getAll = (req, res) => {
+const getAll = async (req, res, next) => {
   try {
-    const filters = {
-      status: req.query.status || undefined,
-      priority: req.query.priority || undefined,
-      workspace: req.query.workspace || undefined,
-      assignee: req.query.assignee || undefined
-    };
-
-    // Remove undefined keys
-    Object.keys(filters).forEach(key => {
-      if (filters[key] === undefined) delete filters[key];
-    });
-
-    const tasks = taskService.getAllTasks(filters);
-    res.json({
-      success: true,
-      count: tasks.length,
-      data: tasks
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: error.message
-    });
-  }
+    const filters = {};
+    if (req.query.status) filters.status = req.query.status;
+    if (req.query.priority) filters.priority = req.query.priority;
+    if (req.query.workspaceId) filters.workspaceId = req.query.workspaceId;
+    const tasks = await taskService.getAllTasks(filters, req.user?.id);
+    res.json({ success: true, count: tasks.length, data: tasks });
+  } catch (e) { next(e); }
 };
 
-/**
- * GET /api/v1/tasks/stats
- * Get dashboard statistics
- */
-const getStats = (req, res) => {
+const getStats = async (req, res, next) => {
   try {
-    const stats = taskService.getDashboardStats();
-    res.json({
-      success: true,
-      data: stats
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: error.message
-    });
-  }
+    const stats = await taskService.getDashboardStats(req.user?.id);
+    res.json({ success: true, data: stats });
+  } catch (e) { next(e); }
 };
 
-/**
- * GET /api/v1/tasks/:id
- * Retrieve a single task
- */
-const getById = (req, res) => {
+const getById = async (req, res, next) => {
   try {
-    const task = taskService.getTaskById(req.params.id);
-    res.json({
-      success: true,
-      data: task
-    });
-  } catch (error) {
-    res.status(404).json({
-      success: false,
-      error: error.message
-    });
-  }
+    const task = await taskService.getTaskById(req.params.id);
+    res.json({ success: true, data: task });
+  } catch (e) { next(e); }
 };
 
-/**
- * POST /api/v1/tasks
- * Create a new task
- */
-const create = (req, res) => {
+const create = async (req, res, next) => {
   try {
-    const task = taskService.createTask(req.body);
-    res.status(201).json({
-      success: true,
-      message: 'Task created successfully',
-      data: task
-    });
-  } catch (error) {
-    res.status(400).json({
-      success: false,
-      error: error.message
-    });
-  }
+    const task = await taskService.createTask(req.body, req.user?.id);
+    res.status(201).json({ success: true, message: 'Task created', data: task });
+  } catch (e) { next(e); }
 };
 
-/**
- * PUT /api/v1/tasks/:id
- * Update a task
- */
-const update = (req, res) => {
+const update = async (req, res, next) => {
   try {
-    const task = taskService.updateTask(req.params.id, req.body);
-    res.json({
-      success: true,
-      message: 'Task updated successfully',
-      data: task
-    });
-  } catch (error) {
-    res.status(404).json({
-      success: false,
-      error: error.message
-    });
-  }
+    const task = await taskService.updateTask(req.params.id, req.body);
+    res.json({ success: true, message: 'Task updated', data: task });
+  } catch (e) { next(e); }
 };
 
-/**
- * DELETE /api/v1/tasks/:id
- * Delete a task
- */
-const remove = (req, res) => {
+const remove = async (req, res, next) => {
   try {
-    const result = taskService.deleteTask(req.params.id);
-    res.json({
-      success: true,
-      ...result
-    });
-  } catch (error) {
-    res.status(404).json({
-      success: false,
-      error: error.message
-    });
-  }
+    const result = await taskService.deleteTask(req.params.id);
+    res.json({ success: true, ...result });
+  } catch (e) { next(e); }
 };
 
 module.exports = { getAll, getStats, getById, create, update, remove };
