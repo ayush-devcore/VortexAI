@@ -12,6 +12,8 @@ Vortex Workspace is a modern, high-performance, real-time SaaS dashboard built f
 <!-- Add your 10-second GIF here showing Optimistic UI and AI slide-over -->
 *(Demo GIF goes here)*
 
+> **💡 Pro-Tip:** Notice the Zero-Latency task creation. Vortex uses Optimistic UI updates to ensure the interface never waits for the database.
+
 ---
 
 ### 🏛️ The Architecture
@@ -21,6 +23,26 @@ Vortex has graduated from prototype to a fully production-ready system:
 - **Premium Frontend:** HTML5/CSS3 with Tailwind CSS, strictly implementing the Arctic-Vivid design philosophy.
 - **Real-Time Sync:** Socket.io connected for instantaneous multi-client updates.
 - **Smart Layer:** Markdown-rendered AI slide-over panels utilizing the Gemini 2.0 API.
+
+### 🎨 Design Tokens (Arctic-Vivid)
+Strict adherence to this color palette is required for all new components to prevent the "Tailwind Reset" issue:
+- **Primary Blue:** `#2563EB` (Electric Blue)
+- **Primary Green:** `#10B981` (Success Emerald)
+- **Background:** `#F9FAFB` (Arctic White)
+
+---
+
+### 📊 Project Status
+
+| Feature | Status | Tech |
+|---------|--------|------|
+| **Core Dashboard** | ✅ Complete | Tailwind / HTML5 |
+| **Postgres Persistence** | ✅ Complete | Prisma / Neon |
+| **Real-time Sync** | ✅ Complete | Socket.io |
+| **Fuzzy Search** | 🛠️ Help Wanted | Fuse.js |
+| **AI Sub-tasks** | 🛠️ Help Wanted | Gemini API |
+
+---
 
 ### 🚩 Call To Contributors (The "Issue #6" Call-to-Action)
 The Core Engine is built, but we need your help to polish the smart features!
