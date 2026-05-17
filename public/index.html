@@ -85,8 +85,8 @@
       <div class="flex items-center gap-3 cursor-pointer">
         <div id="sidebar-avatar" class="w-9 h-9 rounded-full bg-gradient-to-br from-[#2563EB] to-[#10B981] flex items-center justify-center text-white text-sm font-bold shadow-md shadow-blue-300/30">?</div>
         <div class="flex-1 min-w-0">
-          <p id="sidebar-name" class="text-sm font-semibold text-slate-700 truncate">Loading...</p>
-          <p id="sidebar-role" class="text-[11px] text-slate-400 font-medium uppercase tracking-wider">Syncing</p>
+          <p id="user-name-display" class="text-sm font-semibold text-slate-700 truncate">Loading...</p>
+          <p id="user-role-display" class="text-[11px] text-slate-400 font-medium uppercase tracking-wider">Syncing</p>
         </div>
         <button id="btn-logout" class="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100" title="Logout">
           <i data-lucide="log-out" class="w-4 h-4"></i>
@@ -245,6 +245,15 @@
               <!-- Populated by dashboard.js -->
             </tbody>
           </table>
+          <div id="empty-state-view" class="hidden text-center py-16">
+            <div class="flex flex-col items-center justify-center">
+              <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
+                <i data-lucide="zap" class="w-8 h-8 text-[#2563EB] opacity-80"></i>
+              </div>
+              <p class="text-lg font-bold text-slate-700">No tasks found</p>
+              <p class="text-sm text-slate-500 mt-1 mb-5">Your Arctic-Vivid workspace is a blank canvas. Let's start building!</p>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -315,7 +324,7 @@
         #ai-slide-content ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1rem; }
         #ai-slide-content li { margin-bottom: 0.25rem; }
       </style>
-      <div id="ai-slide-content">
+      <div id="ai-markdown-content">
         <!-- Markdown content injected here -->
       </div>
     </div>
