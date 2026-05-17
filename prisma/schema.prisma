@@ -14,22 +14,59 @@ datasource db {
 // ── User ────────────────────────────────────────────────
 
 model User {
-  id          String   @id @default(uuid())
-  email       String   @unique
-  name        String
-  password    String
-  avatar      String?
-  role        Role     @default(MEMBER)
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id                 String    @id @default(uuid())
+  email              String    @unique
+  name               String
+  password           String
+  avatar             String?
+  role               Role      @default(MEMBER)
+  emailVerified      Boolean   @default(false) @map("email_verified")
+  emailVerifyToken   String?   @unique @map("email_verify_token")
+  emailVerifyExpires DateTime? @map("email_verify_expires")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
 
-  // Relations
   ownedWorkspaces Workspace[]     @relation("WorkspaceOwner")
   memberships     WorkspaceMember[]
   assignedTasks   Task[]          @relation("TaskAssignee")
   createdTasks    Task[]          @relation("TaskCreator")
+  refreshTokens   RefreshToken[]
+  notifications   Notification[]
 
   @@map("users")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  type      String
+  title     String
+  message   String
+  read      Boolean  @default(false)
+  metadata  Json?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, read])
+  @@map("notifications")
+}
+
+// ── Refresh Token (secure session rotation) ───────────────
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String   @map("user_id")
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  revoked   Boolean  @default(false)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("refresh_tokens")
 }
 
 enum Role {

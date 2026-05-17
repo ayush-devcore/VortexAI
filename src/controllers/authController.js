@@ -1,61 +1,111 @@
-// ─────────────────────────────────────────────────────────
-// Auth Controller — Register, Login, Logout, Me
-// ─────────────────────────────────────────────────────────
-
-const { prisma } = require('../config/database');
-const { generateToken, setAuthCookie, hashPassword, comparePassword } = require('../middleware/auth');
+const authService = require('../services/authService');
+const { setAuthCookies, clearAuthCookies, extractRefreshToken } = require('../middleware/auth');
 const logger = require('../config/logger');
 
 const register = async (req, res, next) => {
   try {
-    const { name, email, password } = req.body;
-    if (!name || !email || !password) {
-      return res.status(400).json({ success: false, error: 'Name, email, and password are required' });
-    }
-    const hashed = await hashPassword(password);
-    let user;
-    try {
-      user = await prisma.user.create({ data: { name, email, password: hashed } });
-    } catch {
-      // Fallback for when DB is not available
-      user = { id: 'dev-user-' + Date.now(), name, email, role: 'MEMBER' };
-    }
-    const token = generateToken(user);
-    setAuthCookie(res, token);
-    res.status(201).json({ success: true, data: { id: user.id, name: user.name, email: user.email, role: user.role }, token });
-  } catch (e) { next(e); }
+    const { user, accessToken, refreshToken, verification } = await authService.register(req.body);
+    setAuthCookies(res, accessToken, refreshToken);
+    logger.info(`User registered: ${user.email}`);
+    res.status(201).json({ success: true, data: user, verification });
+  } catch (e) {
+    next(e);
+  }
 };
 
 const login = async (req, res, next) => {
   try {
-    const { email, password } = req.body;
-    if (!email || !password) {
-      return res.status(400).json({ success: false, error: 'Email and password are required' });
+    const { user, accessToken, refreshToken } = await authService.login(req.body);
+    setAuthCookies(res, accessToken, refreshToken);
+    res.json({ success: true, data: user });
+  } catch (e) {
+    next(e);
+  }
+};
+
+const logout = async (req, res, next) => {
+  try {
+    await authService.logout(extractRefreshToken(req));
+    clearAuthCookies(res);
+    res.json({ success: true, message: 'Logged out' });
+  } catch (e) {
+    next(e);
+  }
+};
+
+const refresh = async (req, res, next) => {
+  try {
+    const oldToken = extractRefreshToken(req);
+    if (!oldToken) return res.status(401).json({ success: false, error: 'Refresh token required' });
+    const result = await authService.rotateRefreshToken(oldToken);
+    if (!result) {
+      clearAuthCookies(res);
+      return res.status(401).json({ success: false, error: 'Invalid refresh token' });
     }
-    let user;
-    try {
-      user = await prisma.user.findUnique({ where: { email } });
-    } catch {
-      // Dev fallback
-      user = { id: 'dev-user-001', name: 'Dev User', email, password: await hashPassword('password'), role: 'ADMIN' };
-    }
-    if (!user) return res.status(401).json({ success: false, error: 'Invalid credentials' });
-    const valid = await comparePassword(password, user.password);
-    if (!valid) return res.status(401).json({ success: false, error: 'Invalid credentials' });
-    const token = generateToken(user);
-    setAuthCookie(res, token);
-    logger.info(`User logged in: ${email}`);
-    res.json({ success: true, data: { id: user.id, name: user.name, email: user.email, role: user.role }, token });
-  } catch (e) { next(e); }
+    setAuthCookies(res, result.accessToken, result.refreshToken);
+    res.json({ success: true, data: result.user });
+  } catch (e) {
+    next(e);
+  }
 };
 
-const logout = (req, res) => {
-  res.clearCookie('vortex_token');
-  res.json({ success: true, message: 'Logged out' });
+const me = async (req, res, next) => {
+  try {
+    const user = await authService.getUserById(req.user.id);
+    if (!user) return res.status(404).json({ success: false, error: 'User not found' });
+    res.json({ success: true, data: user });
+  } catch (e) {
+    next(e);
+  }
 };
 
-const me = (req, res) => {
-  res.json({ success: true, data: req.user });
+const updateProfile = async (req, res, next) => {
+  try {
+    const user = await authService.updateProfile(req.user.id, req.body);
+    res.json({ success: true, data: user });
+  } catch (e) {
+    next(e);
+  }
 };
 
-module.exports = { register, login, logout, me };
+const changePassword = async (req, res, next) => {
+  try {
+    const result = await authService.changePassword(req.user.id, req.body);
+    clearAuthCookies(res);
+    res.json({ success: true, ...result });
+  } catch (e) {
+    next(e);
+  }
+};
+
+const verifyEmail = async (req, res, next) => {
+  try {
+    const { token } = req.body;
+    if (!token) return res.status(400).json({ success: false, error: 'Token required' });
+    const user = await authService.verifyEmail(token);
+    res.json({ success: true, data: user, message: 'Email verified successfully' });
+  } catch (e) {
+    next(e);
+  }
+};
+
+const resendVerification = async (req, res, next) => {
+  try {
+    const verification = await authService.resendVerification(req.user.id);
+    res.json({ success: true, verification, message: 'Verification email sent' });
+  } catch (e) {
+    next(e);
+  }
+};
+
+module.exports = {
+  register,
+  login,
+  logout,
+  refresh,
+  me,
+  updateProfile,
+  changePassword,
+  verifyEmail,
+  resendVerification,
+};

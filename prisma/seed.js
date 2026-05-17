@@ -6,24 +6,26 @@ async function main() {
   console.log('Seeding database...');
   
   // Clean up
+  await prisma.notification.deleteMany();
+  await prisma.refreshToken.deleteMany();
   await prisma.task.deleteMany();
   await prisma.workspaceMember.deleteMany();
   await prisma.workspace.deleteMany();
   await prisma.user.deleteMany();
 
   // Create users
-  const password = await bcrypt.hash('password123', 10);
+  const password = await bcrypt.hash('Password123', 12);
   
   const ayush = await prisma.user.create({
-    data: { name: 'Ayush', email: 'admin@vortex.io', password, role: 'ADMIN' }
+    data: { name: 'Ayush', email: 'admin@vortex.io', password, role: 'ADMIN', emailVerified: true }
   });
   
   const sarah = await prisma.user.create({
-    data: { name: 'Sarah Chen', email: 'sarah@vortex.io', password, role: 'MEMBER' }
+    data: { name: 'Sarah Chen', email: 'sarah@vortex.io', password, role: 'MEMBER', emailVerified: true }
   });
   
   const marcus = await prisma.user.create({
-    data: { name: 'Marcus Johnson', email: 'marcus@vortex.io', password, role: 'MEMBER' }
+    data: { name: 'Marcus Johnson', email: 'marcus@vortex.io', password, role: 'MEMBER', emailVerified: true }
   });
 
   // Create Workspaces

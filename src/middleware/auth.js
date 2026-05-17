@@ -1,97 +1,96 @@
 // ─────────────────────────────────────────────────────────
-// Auth Middleware — JWT with HTTP-only Cookies
+// Auth Middleware — JWT access tokens + secure cookies
 // ─────────────────────────────────────────────────────────
 
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const { prisma } = require('../config/database');
 const logger = require('../config/logger');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-me';
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
+const BCRYPT_ROUNDS = 12;
 
-/** Generate a signed JWT */
+const COOKIE_OPTS = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'strict',
+  path: '/',
+};
+
 function generateToken(user) {
   return jwt.sign(
-    { id: user.id, email: user.email, role: user.role },
+    { id: user.id, email: user.email, name: user.name, role: user.role },
     JWT_SECRET,
-    { expiresIn: JWT_EXPIRES_IN }
+    { expiresIn: process.env.JWT_ACCESS_EXPIRES || '15m' }
   );
 }
 
-/** Set HTTP-only auth cookie */
-function setAuthCookie(res, token) {
-  res.cookie('vortex_token', token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+function setAuthCookies(res, accessToken, refreshToken) {
+  res.cookie('vortex_access', accessToken, {
+    ...COOKIE_OPTS,
     signed: true,
+    maxAge: 15 * 60 * 1000,
+  });
+  res.cookie('vortex_refresh', refreshToken, {
+    ...COOKIE_OPTS,
+    signed: true,
+    maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 }
 
-/** Hash a password */
-async function hashPassword(password) {
-  return bcrypt.hash(password, 12);
+function clearAuthCookies(res) {
+  res.clearCookie('vortex_access', { path: '/' });
+  res.clearCookie('vortex_refresh', { path: '/' });
+  res.clearCookie('vortex_token', { path: '/' });
 }
 
-/** Compare password with hash */
+async function hashPassword(password) {
+  return bcrypt.hash(password, BCRYPT_ROUNDS);
+}
+
 async function comparePassword(password, hash) {
   return bcrypt.compare(password, hash);
 }
 
-/**
- * Auth middleware — verifies JWT from cookie or Authorization header.
- * In dev mode without DB, creates a mock user context.
- */
+function extractAccessToken(req) {
+  return (
+    req.signedCookies?.vortex_access ||
+    req.headers.authorization?.replace(/^Bearer\s+/i, '') ||
+    null
+  );
+}
+
+function extractRefreshToken(req) {
+  return req.signedCookies?.vortex_refresh || req.body?.refreshToken || null;
+}
+
 async function requireAuth(req, res, next) {
   try {
-    // Extract token from signed cookie or Authorization header
-    const token =
-      req.signedCookies?.vortex_token ||
-      req.headers.authorization?.replace('Bearer ', '');
-
+    const token = extractAccessToken(req);
     if (!token) {
-      // Dev fallback: mock user when no auth is configured
-      if (process.env.NODE_ENV !== 'production') {
-        const devUser = await prisma.user.findFirst();
-        if (devUser) {
-          req.user = { id: devUser.id, email: devUser.email, name: devUser.name, role: devUser.role };
-          return next();
-        }
-      }
       return res.status(401).json({ success: false, error: 'Authentication required' });
     }
-
     const decoded = jwt.verify(token, JWT_SECRET);
     req.user = decoded;
     next();
   } catch (error) {
     if (error.name === 'TokenExpiredError') {
-      return res.status(401).json({ success: false, error: 'Token expired' });
+      return res.status(401).json({ success: false, error: 'Token expired', code: 'TOKEN_EXPIRED' });
     }
     logger.warn(`Auth failed: ${error.message}`);
     return res.status(401).json({ success: false, error: 'Invalid token' });
   }
 }
 
-/** Optional auth — attaches user if token exists, continues otherwise */
 async function optionalAuth(req, res, next) {
   try {
-    const token =
-      req.signedCookies?.vortex_token ||
-      req.headers.authorization?.replace('Bearer ', '');
-    if (token) {
-      req.user = jwt.verify(token, JWT_SECRET);
-    } else if (process.env.NODE_ENV !== 'production') {
-      const devUser = await prisma.user.findFirst();
-      if (devUser) req.user = { id: devUser.id, email: devUser.email, name: devUser.name, role: devUser.role };
-    }
-  } catch { /* silent — user stays undefined */ }
+    const token = extractAccessToken(req);
+    if (token) req.user = jwt.verify(token, JWT_SECRET);
+  } catch {
+    /* continue without user */
+  }
   next();
 }
 
-/** Role-based access control */
 function requireRole(...roles) {
   return (req, res, next) => {
     if (!req.user || !roles.includes(req.user.role)) {
@@ -102,6 +101,14 @@ function requireRole(...roles) {
 }
 
 module.exports = {
-  generateToken, setAuthCookie, hashPassword, comparePassword,
-  requireAuth, optionalAuth, requireRole,
+  generateToken,
+  setAuthCookies,
+  clearAuthCookies,
+  hashPassword,
+  comparePassword,
+  extractAccessToken,
+  extractRefreshToken,
+  requireAuth,
+  optionalAuth,
+  requireRole,
 };

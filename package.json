@@ -1,18 +1,19 @@
 {
   "name": "vortex-workspace",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "description": "Vortex — Enterprise SaaS workspace dashboard with AI-powered insights",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "css:build": "npx tailwindcss -i src/styles/input.css -o public/css/style.css --minify",
-    "css:watch": "npx tailwindcss -i src/styles/input.css -o public/css/style.css --watch",
-    "build": "npm run css:build && npx prisma generate",
+    "client:dev": "npm run dev --prefix client",
+    "client:build": "npm run build --prefix client",
+    "build": "npm run client:build && npx prisma generate",
     "db:push": "npx prisma db push",
+    "db:seed": "node prisma/seed.js",
     "db:studio": "npx prisma studio",
     "prisma:generate": "npx prisma generate",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "setup": "npx prisma generate && npx prisma db push && node prisma/seed.js"
   },
   "keywords": [
     "dashboard",

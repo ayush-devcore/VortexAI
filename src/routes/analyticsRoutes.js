@@ -1,11 +1,9 @@
-// ─────────────────────────────────────────────────────────────
-// Analytics Routes
-// ─────────────────────────────────────────────────────────────
-
 const express = require('express');
-const router = express.Router();
 const analyticsController = require('../controllers/analyticsController');
+const { requireAuth } = require('../middleware/auth');
 
-router.get('/', analyticsController.getAnalytics);
+const router = express.Router();
+
+router.get('/', requireAuth, analyticsController.getAnalytics);
 
 module.exports = router;

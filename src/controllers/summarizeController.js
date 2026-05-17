@@ -1,48 +1,34 @@
-// ─────────────────────────────────────────────────────────────
-// Summarize Controller — Gemini AI Placeholder
-// ─────────────────────────────────────────────────────────────
-
-/**
- * POST /v1/api/summarize
- * Placeholder endpoint for Gemini-powered text summarization.
- * Currently returns mock data for frontend integration testing.
- *
- * @param {import('express').Request} req
- * @param {import('express').Response} res
- * @param {import('express').NextFunction} next
- */
-const { analyzeSentiment } = require('../../public/js/GeminiCore');
+const { analyzeSentiment } = require('../services/geminiService');
 
 const summarize = async (req, res, next) => {
   try {
     const { text } = req.body;
-    if (!text || !text.trim()) {
+    if (!text?.trim()) {
       const err = new Error('Request body must include a non-empty "text" field.');
       err.status = 400;
       throw err;
     }
 
-    // Call the live Gemini AI model
     const aiResult = await analyzeSentiment(text);
 
-    const markdownResponse = `
-### 🧠 Analysis Complete
+    const sentimentIcon =
+      aiResult.sentiment === 'positive' ? '🟢' : aiResult.sentiment === 'negative' ? '🔴' : '🟡';
+    const riskIcon =
+      aiResult.riskLevel === 'High' ? '🔴' : aiResult.riskLevel === 'Medium' ? '🟡' : '🟢';
 
-**Sentiment:** ${aiResult.sentiment === 'positive' ? '🟢' : aiResult.sentiment === 'negative' ? '🔴' : '🟡'} ${aiResult.sentiment.toUpperCase()} (${aiResult.sentimentScore})
-**Risk Level:** ${aiResult.riskLevel === 'High' ? '🔴 High Risk' : aiResult.riskLevel === 'Medium' ? '🟡 Medium Risk' : '🟢 Low Risk'}
+    const markdownResponse = `
+### Analysis Complete
+
+**Sentiment:** ${sentimentIcon} ${aiResult.sentiment.toUpperCase()} (${aiResult.sentimentScore})
+**Risk Level:** ${riskIcon} ${aiResult.riskLevel}
 
 ---
 
-### 📝 Executive Summary
+### Executive Summary
 *${aiResult.summary}*
-
-> **AI Note:** This analysis is generated in real-time by Google Gemini Flash.
     `.trim();
 
-    res.json({
-      success: true,
-      summary: markdownResponse // Sent as 'summary' based on dashboard.js parsing rules
-    });
+    res.json({ success: true, summary: markdownResponse, raw: aiResult });
   } catch (error) {
     next(error);
   }

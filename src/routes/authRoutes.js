@@ -1,16 +1,28 @@
-// ─────────────────────────────────────────────────────────
-// Auth Routes
-// ─────────────────────────────────────────────────────────
-
 const express = require('express');
-const router = express.Router();
-const authController = require('../controllers/authController');
+const {
+  register,
+  login,
+  logout,
+  refresh,
+  me,
+  updateProfile,
+  changePassword,
+  verifyEmail,
+  resendVerification,
+} = require('../controllers/authController');
 const { requireAuth } = require('../middleware/auth');
 const { authLimiter } = require('../middleware/rateLimiter');
 
-router.post('/register', authLimiter, authController.register);
-router.post('/login', authLimiter, authController.login);
-router.post('/logout', authController.logout);
-router.get('/me', requireAuth, authController.me);
+const router = express.Router();
+
+router.post('/register', authLimiter, register);
+router.post('/login', authLimiter, login);
+router.post('/logout', logout);
+router.post('/refresh', authLimiter, refresh);
+router.post('/verify-email', verifyEmail);
+router.get('/me', requireAuth, me);
+router.patch('/me', requireAuth, updateProfile);
+router.put('/password', requireAuth, changePassword);
+router.post('/resend-verification', requireAuth, resendVerification);
 
 module.exports = router;

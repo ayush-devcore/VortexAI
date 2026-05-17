@@ -1,8 +1,10 @@
 const express = require('express');
-const router = express.Router();
 const summarizeController = require('../controllers/summarizeController');
+const { requireAuth } = require('../middleware/auth');
 const { aiLimiter } = require('../middleware/rateLimiter');
 
-router.post('/', aiLimiter, summarizeController.summarize);
+const router = express.Router();
+
+router.post('/', requireAuth, aiLimiter, summarizeController.summarize);
 
 module.exports = router;

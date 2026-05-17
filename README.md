@@ -1,84 +1,80 @@
-# Vortex Workspace ⚡ v3.0 (Enterprise Edition)
+# Vortex Workspace v4
 
-![Database: Neon PostgreSQL](https://img.shields.io/badge/Database-Neon_PostgreSQL-00E599?style=flat-square&logo=postgresql&logoColor=black)
-![Cache: Upstash Redis](https://img.shields.io/badge/Cache-Upstash_Redis-FF4D4D?style=flat-square&logo=redis&logoColor=white)
-![AI: Google Gemini](https://img.shields.io/badge/AI-Google_Gemini-4285F4?style=flat-square&logo=google&logoColor=white)
+AI-powered workspace dashboard with React, secure auth, real-time collaboration, and Gemini insights.
 
-Vortex Workspace is a modern, high-performance, real-time SaaS dashboard built for the GSSoC Hackathon. It features an "Arctic-Vivid" Glassmorphism UI, real-time optimistic updates, and intelligent AI insights powered by Google Gemini.
+## Stack
 
----
+| Layer | Tech |
+|-------|------|
+| Frontend | React 19, TypeScript, Vite, Tailwind CSS 4, Framer Motion |
+| Backend | Node.js, Express 5, Prisma, PostgreSQL |
+| Auth | JWT access tokens + refresh token rotation (HTTP-only cookies) |
+| Real-time | Socket.io |
+| AI | Google Gemini 2.0 Flash (server-side only) |
 
-### 🎥 Demo
-<!-- Add your 10-second GIF here showing Optimistic UI and AI slide-over -->
-*(Demo GIF goes here)*
+## Features
 
-> **💡 Pro-Tip:** Notice the Zero-Latency task creation. Vortex uses Optimistic UI updates to ensure the interface never waits for the database.
+- Dashboard with stats, tasks, analytics, and AI Studio
+- Workspace switcher, team invites, and member management
+- Task CRUD with full edit modal (description, priority, due date, status)
+- In-app notifications (persisted + real-time)
+- Email verification flow
+- Profile & password settings
+- Calendar, Projects, Roadmap, and Help views
+- Fuse.js fuzzy search with **Ctrl+K**
+- Teal/amber dark theme (no purple)
 
----
+## Quick start
 
-### 🏛️ The Architecture
-Vortex has graduated from prototype to a fully production-ready system:
-- **Scalable Backend:** Node.js, Express, Prisma ORM, PostgreSQL (via Neon) and Redis caching (via Upstash).
-- **Secure Infrastructure:** JWT Authentication, HTTP-only cookies, Row Level Security (RLS), Helmet, and rate limiting.
-- **Premium Frontend:** HTML5/CSS3 with Tailwind CSS, strictly implementing the Arctic-Vivid design philosophy.
-- **Real-Time Sync:** Socket.io connected for instantaneous multi-client updates.
-- **Smart Layer:** Markdown-rendered AI slide-over panels utilizing the Gemini 2.0 API.
+```bash
+npm install
+cd client && npm install && cd ..
+cp .env.example .env   # fill DATABASE_URL, JWT_SECRET, COOKIE_SECRET, GEMINI_API_KEY
+npm run setup          # prisma generate, db push, seed
+```
 
-### 🎨 Design Tokens (Arctic-Vivid)
-Strict adherence to this color palette is required for all new components to prevent the "Tailwind Reset" issue:
-- **Primary Blue:** `#2563EB` (Electric Blue)
-- **Primary Green:** `#10B981` (Success Emerald)
-- **Background:** `#F9FAFB` (Arctic White)
+**Terminal 1 — API:**
+```bash
+npm run dev
+```
 
----
+**Terminal 2 — UI:**
+```bash
+npm run client:dev
+```
 
-### 📊 Project Status
+Open **http://localhost:5173**
 
-| Feature | Status | Tech |
-|---------|--------|------|
-| **Core Dashboard** | ✅ Complete | Tailwind / HTML5 |
-| **Postgres Persistence** | ✅ Complete | Prisma / Neon |
-| **Real-time Sync** | ✅ Complete | Socket.io |
-| **Fuzzy Search** | 🛠️ Help Wanted | Fuse.js |
-| **AI Sub-tasks** | 🛠️ Help Wanted | Gemini API |
+**Demo login:** `admin@vortex.io` / `Password123`
 
----
+## Production build
 
-### 🚩 Call To Contributors (The "Issue #6" Call-to-Action)
-The Core Engine is built, but we need your help to polish the smart features!
-- **Search Logic:** Implement `Fuse.js` for fuzzy search across tasks and workspaces in `dashboard.js`.
-- **Detailed AI Suggestions:** Enhance the AI context window to generate actionable sub-tasks based on the sentiment analysis.
-- **Mobile Responsiveness:** Ensure the Glassmorphism sidebar collapses perfectly on smaller screens.
+```bash
+npm run build
+NODE_ENV=production npm start
+```
 
-### 🛠️ Local Development Setup
+Serves the React app from `client/dist` on port 3000.
 
-1. **Clone and Install:**
-   ```bash
-   git clone https://github.com/your-username/VortexAI.git
-   cd VortexAI
-   npm install
-   ```
+## API
 
-2. **Environment Variables:**
-   Create a `.env` file and populate it using `.env.example`:
-   - `DATABASE_URL` (PostgreSQL connection string)
-   - `REDIS_URL` (Upstash Redis)
-   - `GEMINI_API_KEY`
-   - `JWT_SECRET`
+Base: `/v1/api`
 
-3. **Database Migration:**
-   ```bash
-   npx prisma generate
-   npx prisma migrate dev --name init
-   node prisma/seed.js
-   ```
+- `POST /auth/register|login|logout|refresh|verify-email`
+- `GET|PATCH /auth/me`, `PUT /auth/password`
+- `GET|POST|PUT|DELETE /workspace`, `.../members`
+- `GET|POST|PUT|DELETE /tasks`
+- `GET /analytics`, `POST /summarize`
+- `GET|PATCH /notifications`
 
-4. **Launch Server:**
-   ```bash
-   npm run dev
-   ```
-   Navigate to `http://localhost:3000` to enter the Vortex.
+## Security
 
----
+- Bcrypt (12 rounds), strong password policy
+- Short-lived access tokens + refresh rotation in DB
+- `SameSite=strict` signed cookies
+- Rate limiting on auth and AI routes
+- Workspace membership checks on all mutations
 
-**Built with ❤️ for GSSoC.**
+## License
+
+ISC
