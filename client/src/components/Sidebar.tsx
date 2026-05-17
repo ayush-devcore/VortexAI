@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { useEffect } from 'react';
 import {
   LayoutDashboard,
   CheckSquare,
@@ -38,21 +39,43 @@ interface SidebarProps {
 export function Sidebar({ active, onNavigate, mobileOpen, onClose }: SidebarProps) {
   const { user, logout } = useAuth();
 
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileOpen]);
+
   return (
     <>
       {mobileOpen && (
         <motion.div
-          className="fixed inset-0 bg-black/60 z-40 lg:hidden"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
           initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          animate={{ opacity: 1, backdropFilter: 'blur(4px)' }}
           exit={{ opacity: 0 }}
           onClick={onClose}
         />
       )}
       <motion.aside
+        initial={{ x: -120, opacity: 0.8 }}
+        animate={{
+          x: mobileOpen || window.innerWidth >= 1024 ? 0 : -120,
+          opacity: 1,
+        }}
+        transition={{
+          type: 'spring',
+          stiffness: 320,
+          damping: 28,
+        }}
         className={`fixed lg:static inset-y-0 left-0 z-50 w-64 glass-strong flex flex-col
-          transition-transform duration-300 lg:translate-x-0
-          ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}
+     lg:translate-x-0
+    ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}
       >
         <div className="p-6 flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center shadow-lg shadow-teal-500/20">
@@ -80,7 +103,7 @@ export function Sidebar({ active, onNavigate, mobileOpen, onClose }: SidebarProp
                 initial={{ opacity: 0, x: -16 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: i * 0.03 }}
-                whileHover={{ x: 4 }}
+                whileHover={{ x: 6, scale: 1.01 }}
                 whileTap={{ scale: 0.98 }}
               >
                 <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-teal-400' : ''}`} />
