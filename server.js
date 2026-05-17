@@ -42,7 +42,7 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "https://unpkg.com", "https://cdn.tailwindcss.com"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://unpkg.com", "https://cdn.tailwindcss.com", "https://cdn.jsdelivr.net"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       imgSrc: ["'self'", "data:", "https:"],
@@ -110,7 +110,10 @@ app.use((err, req, res, next) => {
 
 // ── Socket.io — Real-time Collaboration ─────────────────
 const io = new SocketServer(server, {
-  cors: { origin: process.env.CORS_ORIGIN || '*', credentials: true },
+  cors: { 
+      origin: "*", // Allow all origins during dev
+      methods: ["GET", "POST"]
+  },
 });
 
 const onlineUsers = new Map();
