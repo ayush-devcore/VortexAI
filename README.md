@@ -1,80 +1,65 @@
-# Vortex Workspace v4
+# Vortex Workspace ⚡ v4 (Enterprise React Edition)
 
-AI-powered workspace dashboard with React, secure auth, real-time collaboration, and Gemini insights.
+![Frontend: React 19](https://img.shields.io/badge/Frontend-React_19_%2B_Vite-61DAFB?style=flat-square&logo=react&logoColor=black)
+![Language: TypeScript](https://img.shields.io/badge/Language-TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)
+![Database: PostgreSQL](https://img.shields.io/badge/Database-Prisma_%2B_PostgreSQL-4169E1?style=flat-square&logo=postgresql&logoColor=white)
+![AI: Google Gemini](https://img.shields.io/badge/AI-Gemini_2.0_Flash-4285F4?style=flat-square&logo=google&logoColor=white)
 
-## Stack
+Vortex Workspace is a modern, high-performance SaaS dashboard designed for elite team collaboration. Version 4 introduces a complete architecture overhaul: a decoupled **React 19 + TypeScript** SPA, real-time Socket.io synchronization, enterprise-grade security, and an intelligent AI Studio powered by Google Gemini.
 
-| Layer | Tech |
-|-------|------|
-| Frontend | React 19, TypeScript, Vite, Tailwind CSS 4, Framer Motion |
-| Backend | Node.js, Express 5, Prisma, PostgreSQL |
-| Auth | JWT access tokens + refresh token rotation (HTTP-only cookies) |
-| Real-time | Socket.io |
-| AI | Google Gemini 2.0 Flash (server-side only) |
+---
 
-## Features
+### 🎥 Live Demo
+*(Demo GIF goes here)*
 
-- Dashboard with stats, tasks, analytics, and AI Studio
-- Workspace switcher, team invites, and member management
-- Task CRUD with full edit modal (description, priority, due date, status)
-- In-app notifications (persisted + real-time)
-- Email verification flow
-- Profile & password settings
-- Calendar, Projects, Roadmap, and Help views
-- Fuse.js fuzzy search with **Ctrl+K**
-- Teal/amber dark theme (no purple)
+> **💡 Pro-Tip:** Press `Ctrl + K` anywhere in the app to trigger the lightning-fast Fuse.js fuzzy search engine.
 
-## Quick start
+---
 
+### 🚀 Core Features
+
+* **Intelligent Dashboard:** Real-time stats, team velocity analytics, and an integrated AI Studio for sentiment and risk analysis.
+* **Zero-Latency Interactions:** Built with Optimistic UI principles. Don't wait for the database; the UI updates instantly.
+* **Deep Workspace Management:** Seamlessly switch between workspaces, manage roles, and invite team members.
+* **Advanced Task Engine:** Full CRUD capabilities with rich edit modals (descriptions, dynamic priority, due dates, and status tracking).
+* **The "Arctic-Vivid" Dark Theme:** A premium, custom Teal & Amber design system built on Tailwind CSS 4 with fluid Framer Motion animations (Strictly 0% purple).
+
+---
+
+### 🏛️ The V4 Architecture Stack
+
+| Layer | Technology | Purpose |
+| :--- | :--- | :--- |
+| **Frontend** | React 19, TypeScript, Vite | High-performance SPA with instant Hot Module Replacement. |
+| **Styling** | Tailwind CSS 4, Framer Motion | Fluid layouts, glassmorphism, and complex layout animations. |
+| **Backend** | Node.js, Express 5 | Asynchronous, event-driven API engine. |
+| **Database** | PostgreSQL (via Prisma ORM) | Strictly typed, relational data persistence. |
+| **Real-Time** | Socket.io | Bi-directional event broadcasting for multi-user sync. |
+| **Intelligence** | Google Gemini 2.0 Flash | Server-side automated prompt pipelines and Markdown generation. |
+
+---
+
+### 🛡️ Enterprise-Grade Security
+Vortex doesn't compromise on data integrity.
+* **Auth Architecture:** JWT Access Tokens paired with secure Refresh Token rotation stored in the database.
+* **Transport Security:** Strict `HTTP-Only`, `SameSite=strict` signed cookies to prevent XSS and CSRF attacks.
+* **Data Hardening:** Bcrypt (12 rounds) password hashing, rate limiting on Auth/AI routes, and strict Row-Level Security (RLS) ensuring users only mutate data within their authorized workspaces.
+
+---
+
+### 🛠️ Quick Start & Local Development
+
+Vortex uses a decoupled monorepo structure. You will run the API and the UI simultaneously.
+
+#### 1. Clone & Install
 ```bash
+git clone [https://github.com/your-username/VortexAI.git](https://github.com/your-username/VortexAI.git)
+cd VortexAI
+
+# Install Backend dependencies
 npm install
-cd client && npm install && cd ..
-cp .env.example .env   # fill DATABASE_URL, JWT_SECRET, COOKIE_SECRET, GEMINI_API_KEY
-npm run setup          # prisma generate, db push, seed
-```
 
-**Terminal 1 — API:**
-```bash
-npm run dev
-```
-
-**Terminal 2 — UI:**
-```bash
-npm run client:dev
-```
-
-Open **http://localhost:5173**
-
-**Demo login:** `admin@vortex.io` / `Password123`
-
-## Production build
-
-```bash
-npm run build
-NODE_ENV=production npm start
-```
-
-Serves the React app from `client/dist` on port 3000.
-
-## API
-
-Base: `/v1/api`
-
-- `POST /auth/register|login|logout|refresh|verify-email`
-- `GET|PATCH /auth/me`, `PUT /auth/password`
-- `GET|POST|PUT|DELETE /workspace`, `.../members`
-- `GET|POST|PUT|DELETE /tasks`
-- `GET /analytics`, `POST /summarize`
-- `GET|PATCH /notifications`
-
-## Security
-
-- Bcrypt (12 rounds), strong password policy
-- Short-lived access tokens + refresh rotation in DB
-- `SameSite=strict` signed cookies
-- Rate limiting on auth and AI routes
-- Workspace membership checks on all mutations
-
-## License
-
-ISC
+# Install Frontend dependencies
+cd client
+npm install
+cd ..
