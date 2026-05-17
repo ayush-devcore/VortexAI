@@ -6,6 +6,8 @@ To ensure a smooth review process, please follow these guidelines.
 
 ---
 
+## 🛠️ Getting Started
+
 1. **Fork the Repository:** Click the "Fork" button at the top right of this page.
 2. **Clone Your Fork & Set Up Upstream:**
    ```bash
