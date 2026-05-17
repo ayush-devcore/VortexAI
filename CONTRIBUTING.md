@@ -1,5 +1,15 @@
-# Contribution Guidelines
+# 🚀 Contributing to VortexAI
 
-1. Always open or comment on an issue to get assigned before writing code.
-2. Create a branch matching your task: `feat/feature-name` or `fix/bug-name`.
-3. Ensure your local server runs cleanly via `npm run dev` before committing.
+Thank you for taking the time to contribute! VortexAI is participating in GSSoC '26, and we are excited to build the future of AI-powered collaborative workspaces together. 
+
+To ensure a smooth review process, please follow these guidelines.
+
+---
+
+## 🛠️ Getting Started
+
+1. **Fork the Repository:** Click the "Fork" button at the top right of this page.
+2. **Clone Your Fork:**
+   ```bash
+   git clone [https://github.com/YOUR_USERNAME/VortexAI.git](https://github.com/YOUR_USERNAME/VortexAI.git)
+   cd VortexAI
