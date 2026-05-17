@@ -81,14 +81,16 @@
     </nav>
 
     <!-- User Card -->
-    <div class="px-4 py-4 border-t border-slate-200/40">
-      <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-full bg-gradient-to-br from-[#2563EB] to-[#10B981] flex items-center justify-center text-white text-sm font-bold shadow-md shadow-blue-300/30">A</div>
+    <div class="px-4 py-4 border-t border-slate-200/40 group relative">
+      <div class="flex items-center gap-3 cursor-pointer">
+        <div id="sidebar-avatar" class="w-9 h-9 rounded-full bg-gradient-to-br from-[#2563EB] to-[#10B981] flex items-center justify-center text-white text-sm font-bold shadow-md shadow-blue-300/30">?</div>
         <div class="flex-1 min-w-0">
-          <p class="text-sm font-semibold text-slate-700 truncate">Ayush</p>
-          <p class="text-[11px] text-slate-400 font-medium">Admin</p>
+          <p id="sidebar-name" class="text-sm font-semibold text-slate-700 truncate">Loading...</p>
+          <p id="sidebar-role" class="text-[11px] text-slate-400 font-medium uppercase tracking-wider">Syncing</p>
         </div>
-        <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400"></i>
+        <button id="btn-logout" class="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100" title="Logout">
+          <i data-lucide="log-out" class="w-4 h-4"></i>
+        </button>
       </div>
     </div>
   </aside>
@@ -128,7 +130,7 @@
 
           <!-- Avatar -->
           <div class="flex items-center gap-3 pl-3 border-l border-slate-200/60">
-            <div class="w-9 h-9 rounded-full bg-gradient-to-br from-[#2563EB] to-[#10B981] flex items-center justify-center text-white text-sm font-bold shadow-lg shadow-blue-200/40 ring-2 ring-white">A</div>
+            <div id="header-avatar" class="w-9 h-9 rounded-full bg-gradient-to-br from-[#2563EB] to-[#10B981] flex items-center justify-center text-white text-sm font-bold shadow-lg shadow-blue-200/40 ring-2 ring-white transition-transform hover:scale-105 cursor-pointer">?</div>
           </div>
         </div>
       </div>

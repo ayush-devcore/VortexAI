@@ -22,12 +22,31 @@ try {
 
 // ── Bootstrap ───────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
+  loadSession();
   loadAnalytics();
   loadTasks();
   loadWorkspaces();
   setupSearch();
   setupEventListeners();
 });
+
+// ── Load Session ────────────────────────────────────────
+async function loadSession() {
+  try {
+    const { data } = await apiFetch('/auth/me');
+    const name = data.name || 'User';
+    const role = data.role || 'Member';
+    const initials = name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+
+    document.getElementById('sidebar-name').textContent = name;
+    document.getElementById('sidebar-role').textContent = role;
+    document.getElementById('sidebar-avatar').textContent = initials;
+    document.getElementById('header-avatar').textContent = initials;
+  } catch (e) {
+    // 401 Unauthorized -> redirect to login
+    window.location.href = '/login.html';
+  }
+}
 
 // ── API Helpers ─────────────────────────────────────────
 async function apiFetch(endpoint, opts = {}) {
@@ -154,6 +173,14 @@ function setupSearch() {
 
 // ── Event Listeners ─────────────────────────────────────
 function setupEventListeners() {
+  // Logout
+  document.getElementById('btn-logout')?.addEventListener('click', async () => {
+    try {
+      await apiFetch('/auth/logout', { method: 'POST' });
+      window.location.href = '/login.html';
+    } catch (e) { alert('Logout failed: ' + e.message); }
+  });
+
   // Status filter
   document.getElementById('filter-status')?.addEventListener('change', (e) => {
     loadTasks(e.target.value ? { status: e.target.value } : {});
