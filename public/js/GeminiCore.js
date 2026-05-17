@@ -12,7 +12,7 @@
 //   5. Add .env to .gitignore
 // ─────────────────────────────────────────────────────────────
 
-const API_KEY = 'YOUR_KEY_HERE';
+const API_KEY = process.env.GEMINI_API_KEY || 'YOUR_KEY_HERE';
 const GEMINI_ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
 
 /**
