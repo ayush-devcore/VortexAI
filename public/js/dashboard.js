@@ -236,4 +236,42 @@ function setupEventListeners() {
   document.getElementById('btn-close-ai')?.addEventListener('click', () => {
     document.getElementById('ai-slideover').classList.add('translate-x-full');
   });
+
+  // Sidebar View Switcher (Event Delegation)
+  document.querySelectorAll('.sidebar-link').forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      const targetView = e.currentTarget.getAttribute('data-target');
+      if (targetView) switchView(targetView);
+    });
+  });
+}
+
+// ── View Swapper ────────────────────────────────────────
+function switchView(viewName) {
+  // Update sidebar active states
+  document.querySelectorAll('.sidebar-link').forEach(el => {
+    el.classList.remove('bg-blue-50', 'text-[#2563EB]', 'font-semibold', 'active');
+    el.classList.add('text-slate-500');
+  });
+  
+  const activeLink = document.querySelector(`.sidebar-link[data-target="${viewName}"]`);
+  if (activeLink) {
+    activeLink.classList.remove('text-slate-500');
+    activeLink.classList.add('bg-blue-50', 'text-[#2563EB]', 'font-semibold', 'active');
+  }
+
+  // Toggle visible sections
+  document.querySelectorAll('.view-section').forEach(el => {
+    const views = el.getAttribute('data-view') || '';
+    if (views.split(' ').includes(viewName)) {
+      el.classList.remove('hidden');
+    } else {
+      el.classList.add('hidden');
+    }
+  });
+
+  // Trigger data fetches
+  if (viewName === 'analytics') loadAnalytics();
+  if (viewName === 'projects' || viewName === 'dashboard') loadTasks();
 }
