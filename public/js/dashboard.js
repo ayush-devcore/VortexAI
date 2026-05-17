@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupSidebarRouter();
     await loadInitialData();
     setupEventListeners();
+    setupSearch();
 });
 
 // ── 1. SESSION MANAGEMENT ─────────────────────────────────
@@ -208,4 +209,51 @@ function setupEventListeners() {
             }
         });
     }
+}
+
+// ── 5. CLIENT-SIDE FUZZY SEARCH (FUSE.JS) ─────────────────
+function setupSearch() {
+    const searchInput = document.getElementById('search-input');
+    if (!searchInput) return;
+
+    // Global Keydown Listener for Ctrl+K / Cmd+K
+    document.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+            e.preventDefault();
+            searchInput.focus();
+        }
+    });
+
+    let fuse;
+    let debounceTimer;
+
+    // Initialize Fuse.js (called implicitly by input event if not initialized, but tasks can change)
+    const initFuse = () => {
+        fuse = new Fuse(allTasks, {
+            keys: ['title', 'description', 'assignee.name', 'tags'],
+            threshold: 0.3, // Fuzzy matching strictness
+            minMatchCharLength: 2
+        });
+    };
+
+    searchInput.addEventListener('input', (e) => {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+            const query = e.target.value.trim();
+            
+            if (!query) {
+                renderTasks(allTasks);
+                return;
+            }
+
+            // Always re-initialize to ensure fresh data
+            initFuse();
+            
+            const results = fuse.search(query);
+            // Map the nested result.item back to a standard array format
+            const mappedTasks = results.map(result => result.item);
+            
+            renderTasks(mappedTasks);
+        }, 150); // 150ms debounce for 0-latency feel
+    });
 }
