@@ -42,7 +42,7 @@ async function connectDB() {
 
 /** Check if DB is available (no network call — cached flag) */
 function isDBAvailable() {
-  return dbAvailable;
+  return !!process.env.DATABASE_URL;
 }
 
 async function disconnectDB() {
