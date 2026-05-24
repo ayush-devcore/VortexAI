@@ -4,8 +4,8 @@ const { prisma } = require('../config/database');
 const { hashPassword, comparePassword } = require('../middleware/auth');
 const logger = require('../config/logger');
 const notificationService = require('./notificationService');
+const { JWT_SECRET } = require('../config/secrets');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-me';
 const ACCESS_EXPIRES = process.env.JWT_ACCESS_EXPIRES || '15m';
 const REFRESH_DAYS = parseInt(process.env.REFRESH_TOKEN_DAYS || '7', 10);
 const APP_URL = process.env.APP_URL || 'http://localhost:5173';

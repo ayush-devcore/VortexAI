@@ -5,8 +5,8 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const logger = require('../config/logger');
+const { JWT_SECRET } = require('../config/secrets');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-me';
 const BCRYPT_ROUNDS = 12;
 
 const COOKIE_OPTS = {

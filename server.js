@@ -18,6 +18,7 @@ const logger = require('./src/config/logger');
 const { connectDB } = require('./src/config/database');
 const { createRedisClient } = require('./src/config/redis');
 const { initSentry } = require('./src/config/sentry');
+const { COOKIE_SECRET } = require('./src/config/secrets');
 
 const authRoutes = require('./src/routes/authRoutes');
 const workspaceRoutes = require('./src/routes/workspaceRoutes');
@@ -60,7 +61,7 @@ app.use(
     credentials: true,
   })
 );
-app.use(cookieParser(process.env.COOKIE_SECRET || 'dev-cookie-secret-change-me'));
+app.use(cookieParser(COOKIE_SECRET));
 
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true }));
