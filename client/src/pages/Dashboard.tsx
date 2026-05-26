@@ -39,6 +39,7 @@ export function Dashboard() {
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
   const [search, setSearch] = useState('');
   const [newTask, setNewTask] = useState('');
+  const [taskError, setTaskError] = useState('');
   const [aiOpen, setAiOpen] = useState(false);
   const [onlineCount, setOnlineCount] = useState(1);
   const [editTask, setEditTask] = useState<Task | null>(null);
@@ -94,11 +95,30 @@ export function Dashboard() {
   const filtered = search.trim() ? fuse.search(search).map((r) => r.item) : tasks;
 
   const createTask = async () => {
-    if (!newTask.trim() || !wsId) return;
-    const title = newTask.trim();
-    setNewTask('');
+    if (!wsId) return;
+
+    const trimmedTitle = newTask.trim();
+
+    if (!trimmedTitle) {
+      setTaskError('Task title is required');
+      return;
+    }
+
+    if (trimmedTitle.length < 3) {
+      setTaskError('Task title must be at least 3 characters');
+      return;
+    }
+
+    setTaskError('');
+
     try {
-      await api.tasks.create({ title, workspaceId: wsId });
+      await api.tasks.create({
+        title: trimmedTitle,
+        workspaceId: wsId,
+      });
+
+      setNewTask('');
+
       loadTasks();
       loadAnalytics();
     } catch {
@@ -179,14 +199,34 @@ export function Dashboard() {
               <section>
                 <motion.div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
                   <h2 className="font-display text-xl font-semibold text-white">Tasks</h2>
-                  <div className="flex gap-2">
-                    <input
-                      value={newTask}
-                      onChange={(e) => setNewTask(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && createTask()}
-                      placeholder="New task title..."
-                      className="flex-1 sm:w-64 bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-teal-500/40"
-                    />
+                  <div className="flex gap-2 items-start">
+                    <div className="flex flex-col flex-1 sm:w-64">
+                      <input
+                        required
+                        minLength={3}
+                        value={newTask}
+                        onChange={(e) => {
+                          setNewTask(e.target.value);
+
+                          if (taskError) {
+                            setTaskError('');
+                          }
+                        }}
+                        onKeyDown={(e) => e.key === 'Enter' && createTask()}
+                        placeholder="New task title..."
+                        className={`bg-white/5 border rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none ${taskError
+                            ? 'border-red-500'
+                            : 'border-white/10 focus:border-teal-500/40'
+                          }`}
+                      />
+
+                      {taskError && (
+                        <p className="text-red-500 text-xs mt-1">
+                          {taskError}
+                        </p>
+                      )}
+                    </div>
+
                     <motion.button
                       onClick={createTask}
                       className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-teal-600 text-white text-sm font-medium"
