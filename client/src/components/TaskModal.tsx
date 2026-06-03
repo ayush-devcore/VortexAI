@@ -17,6 +17,7 @@ export function TaskModal({ task, open, onClose, onSave }: TaskModalProps) {
   const [priority, setPriority] = useState('MEDIUM');
   const [dueDate, setDueDate] = useState('');
   const [saving, setSaving] = useState(false);
+  
 
   useEffect(() => {
     if (task) {
